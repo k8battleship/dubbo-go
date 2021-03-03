@@ -172,6 +172,11 @@ func (nr *nacosRegistry) subscribe(conf *common.URL) (registry.Listener, error) 
 
 // subscribe from registry
 func (nr *nacosRegistry) Subscribe(url *common.URL, notifyListener registry.NotifyListener) error {
+	role, _ := strconv.Atoi(nr.URL.GetParam(constant.ROLE_KEY, ""))
+	if role != common.CONSUMER {
+		return nil
+	}
+
 	for {
 		if !nr.IsAvailable() {
 			logger.Warnf("event listener game over.")
@@ -274,7 +279,7 @@ func getNacosConfig(url *common.URL) (map[string]interface{}, error) {
 			Port:   uint64(port),
 		})
 	}
-	configMap["serverConfigs"] = serverConfigs
+	configMap[nacosConstant.KEY_SERVER_CONFIGS] = serverConfigs
 
 	var clientConfig nacosConstant.ClientConfig
 	timeout, err := time.ParseDuration(url.GetParam(constant.REGISTRY_TIMEOUT_KEY, constant.DEFAULT_REG_TIMEOUT))
@@ -296,7 +301,7 @@ func getNacosConfig(url *common.URL) (map[string]interface{}, error) {
 	}
 	clientConfig.NotLoadCacheAtStart = notLoadCache
 
-	configMap["clientConfig"] = clientConfig
+	configMap[nacosConstant.KEY_CLIENT_CONFIG] = clientConfig
 
 	return configMap, nil
 }
